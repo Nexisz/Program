@@ -21,11 +21,7 @@ int main() {
     int n;
 
     std::cout << "Количество элементов массива:" << std::endl;
-
-    if (!(std::cin >> n)) {
-        std::cout << "Ошибка ввода размера массива" << std::endl;
-        return 1;
-    }
+    std::cin >> n;
 
     if (n <= 0) {
         std::cout << "Некорректный размер массива" << std::endl;
@@ -35,12 +31,8 @@ int main() {
     std::vector<int> numbers(n);
 
     std::cout << "Введите элементы массива через пробел:" << std::endl;
-
     for (int i = 0; i < n; ++i) {
-        if (!(std::cin >> numbers[i])) {
-            std::cout << "Ошибка ввода элементов массива" << std::endl;
-            return 1;
-        }
+        std::cin >> numbers[i];
     }
 
     try {

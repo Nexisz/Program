@@ -1,0 +1,9 @@
+Package: max-value
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Nexisz
+Depends: libc6
+Description: Program for finding maximum value in integer array
+ Simple console C++ application that finds maximum element in array.

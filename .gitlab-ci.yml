@@ -1,0 +1,34 @@
+stages:
+  - build
+  - test
+  - package
+
+image: ubuntu:22.04
+
+before_script:
+  - apt update
+  - apt install -y build-essential dpkg-dev
+
+build_job:
+  stage: build
+  script:
+    - bash cicd/build.sh
+  artifacts:
+    paths:
+      - usr/bin/max_value
+
+test_job:
+  stage: test
+  script:
+    - bash cicd/test.sh
+  dependencies:
+    - build_job
+
+package_job:
+  stage: package
+  script:
+    - bash cicd/package.sh
+  artifacts:
+    paths:
+      - build/max-value_1.0.deb
+
