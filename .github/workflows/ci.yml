@@ -2,18 +2,21 @@ name: CI-CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt update && sudo apt install -y build-essential dpkg-dev
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential dpkg-dev
 
       - name: Build project
         run: |
@@ -22,7 +25,7 @@ jobs:
           mkdir -p ../usr/bin
           cp max_value ../usr/bin/
 
-      - name: Upload binary artifact
+      - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
           name: binary
@@ -33,28 +36,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Download artifact
+      - name: Download binary
         uses: actions/download-artifact@v4
         with:
           name: binary
 
-      - name: Run tests
+      - name: Run test
         run: |
-          echo "5
-1 7 3 9 2" | ./max_value | grep 9
+          echo -e "5\n1 7 3 9 2" | ./max_value | grep 9
 
   package:
     needs: test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install tools
+      - name: Install dpkg tools
         run: sudo apt update && sudo apt install -y dpkg-dev
 
       - name: Build deb package
@@ -67,9 +69,8 @@ jobs:
 
           dpkg-deb --build build/max-value_1.0
 
-      - name: Upload deb artifact
+      - name: Upload deb
         uses: actions/upload-artifact@v4
         with:
-          name: deb-package
+          name: deb
           path: build/max-value_1.0.deb
-
