@@ -50,9 +50,9 @@ jobs:
 
       - name: Run tests
         run: |
-          go run test1.sh
-          go run test2.sh
-          go run test3.sh
+          run test1.sh
+          run test2.sh
+          run test3.sh
                   
   RunPackage:
     needs: RunTest
