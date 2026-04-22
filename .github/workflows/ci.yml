@@ -1,0 +1,75 @@
+name: CI-CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y build-essential dpkg-dev
+
+      - name: Build project
+        run: |
+          cd src
+          make build
+          mkdir -p ../usr/bin
+          cp max_value ../usr/bin/
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary
+          path: usr/bin/max_value
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: binary
+
+      - name: Run tests
+        run: |
+          echo "5
+1 7 3 9 2" | ./max_value | grep 9
+
+  package:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: sudo apt update && sudo apt install -y dpkg-dev
+
+      - name: Build deb package
+        run: |
+          mkdir -p build/max-value_1.0/DEBIAN
+          mkdir -p build/max-value_1.0/usr/bin
+
+          cp DEBIAN/control build/max-value_1.0/DEBIAN/
+          cp usr/bin/max_value build/max-value_1.0/usr/bin/
+
+          dpkg-deb --build build/max-value_1.0
+
+      - name: Upload deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-package
+          path: build/max-value_1.0.deb
+
