@@ -49,14 +49,14 @@ jobs:
       - run: chmod +x ./usr/bin/max_value
 
       - name: Run tests
-      run: |
-        echo "=== RUN TESTS ==="
+        run: |
+          echo "=== RUN TESTS ==="
 
-        bash cicd/tests/test1.sh
-        bash cicd/tests/test2.sh
-        bash cicd/tests/test3.sh
+          bash cicd/tests/test1.sh
+          bash cicd/tests/test2.sh
+          bash cicd/tests/test3.sh
 
-        echo "=== ALL TESTS DONE ==="
+          echo "=== ALL TESTS DONE ==="
 
   RunPackage:
     needs: RunTest
