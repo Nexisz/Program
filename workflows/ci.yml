@@ -7,6 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
+
   RunMake:
     runs-on: ubuntu-22.04
 
@@ -34,6 +35,7 @@ jobs:
           path: usr/bin/max_value
           retention-days: 1
 
+
   RunTest:
     needs: RunMake
     runs-on: ubuntu-22.04
@@ -50,13 +52,14 @@ jobs:
 
       - name: Run tests
         run: |
-  echo "=== RUN TESTS ==="
+          echo "=== RUN TESTS ==="
 
-  bash cicd/tests/test1.sh
-  bash cicd/tests/test2.sh
-  bash cicd/tests/test3.sh
+          bash cicd/tests/test1.sh
+          bash cicd/tests/test2.sh
+          bash cicd/tests/test3.sh
 
-  echo "=== ALL TESTS DONE ==="
+          echo "=== ALL TESTS DONE ==="
+
 
   RunPackage:
     needs: RunTest
@@ -82,6 +85,7 @@ jobs:
 
           dpkg-deb --build build/max-value_1.0
 
+
       - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
@@ -89,7 +93,8 @@ jobs:
           path: build/max-value_1.0.deb
           retention-days: 1
 
-test-docker:
+
+  test-docker:
     needs: RunPackage
     runs-on: ubuntu-22.04
 
@@ -103,10 +108,10 @@ test-docker:
           name: deb-package
           path: .
 
-      - name: Build Docker image
+      - name: Build Docker image (test)
         run: docker build -t myapp-test .
 
-      - name: Build Docker image with tag
+      - name: Build Docker image (release)
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }} .
 
       - name: Login to Docker Hub
