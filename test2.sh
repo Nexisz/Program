@@ -1,68 +1,44 @@
 #!/bin/bash
 set -e
 
-echo "=== TEST 2: Некорректный ввод ==="
+echo "================ TEST 2: Некорректный ввод ================"
+
+run_case() {
+  NAME=$1
+  INPUT=$2
+  EXPECTED=$3
+
+  echo ""
+  echo "----- $NAME -----"
+
+  OUTPUT=$(echo -e "$INPUT" | ./usr/bin/max_value || true)
+
+  echo "$OUTPUT"
+
+  if [[ "$OUTPUT" == *"$EXPECTED"* ]]; then
+    echo "✔️ $NAME PASSED"
+  else
+    echo "✖️ $NAME FAILED"
+    exit 1
+  fi
+}
 
 ############################
-# CASE 1: n = 0
+# CASE 1
 ############################
-
-INPUT="0
-"
-
-EXPECTED="Некорректный размер массива"
-
-OUTPUT=$(echo -e "$INPUT" | ./usr/bin/max_value || true)
-
-echo "$OUTPUT"
-
-if [[ "$OUTPUT" == *"$EXPECTED"* ]]; then
-  echo "Test 2.1 passed"
-else
-  echo "Test 2.1 failed"
-  exit 1
-fi
-
+run_case "CASE 1: n = 0" "0" "Некорректный размер массива"
 
 ############################
-# CASE 2: Слишком большое число
+# CASE 2
 ############################
-
-INPUT="1
-9999999999999999999999
-"
-
-EXPECTED="Ошибка ввода элементов массива"
-
-OUTPUT=$(echo -e "$INPUT" | ./usr/bin/max_value || true)
-
-echo "$OUTPUT"
-
-if [[ "$OUTPUT" == *"$EXPECTED"* ]]; then
-  echo "Test 2.2 passed"
-else
-  echo "Test 2.2 failed"
-fi
-
+run_case "CASE 2: большое число" "1
+9999999999999999999999" "Ошибка ввода"
 
 ############################
-# CASE 3: Буквы вместо чисел
+# CASE 3
 ############################
+run_case "CASE 3: буквы" "3
+a b c" "Ошибка ввода"
 
-INPUT="3
-a b c
-"
-
-EXPECTED="Ошибка ввода элементов массива"
-
-OUTPUT=$(echo -e "$INPUT" | ./usr/bin/max_value || true)
-
-echo "$OUTPUT"
-
-if [[ "$OUTPUT" == *"$EXPECTED"* ]]; then
-  echo "Test 2.3 passed"
-else
-  echo "Test 2.3 failed"
-fi
-
-echo "Test 2 fully passed"
+echo ""
+echo "✔️ TEST 2 ALL CASES PASSED"
