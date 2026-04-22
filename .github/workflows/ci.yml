@@ -1,65 +1,72 @@
-name: CI-CD Pipeline
+name: CI Pipeline - C++ Project
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  RunMake:
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install build tools
         run: |
-          sudo apt update
-          sudo apt install -y build-essential dpkg-dev
+          sudo apt-get update
+          sudo apt-get install -y build-essential make dpkg-dev
 
-      - name: Build project
+      - name: Build program
         run: |
           cd src
           make build
           mkdir -p ../usr/bin
           cp max_value ../usr/bin/
+          chmod +x ../usr/bin/max_value
 
-      - name: Upload binary
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binary
+          name: built-program
           path: usr/bin/max_value
+          retention-days: 1
 
-  test:
-    needs: build
-    runs-on: ubuntu-latest
+  RunTest:
+    needs: RunMake
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout repo
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: built-program
+          path: ./usr/bin
+
+      - run: chmod +x ./usr/bin/max_value
+
+      - name: Run tests
+        run: |
+          echo -e "5\n1 7 3 9 2" | ./usr/bin/max_value | grep 9
+
+  RunPackage:
+    needs: RunTest
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download binary
+      - name: Download binary artifact
         uses: actions/download-artifact@v4
         with:
-          name: binary
+          name: built-program
+          path: ./usr/bin
 
-      - name: Run test
-        run: |
-          echo -e "5\n1 7 3 9 2" | ./max_value | grep 9
-
-  package:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Install dpkg tools
-        run: sudo apt update && sudo apt install -y dpkg-dev
-
-      - name: Build deb package
+      - name: Build .deb package
         run: |
           mkdir -p build/max-value_1.0/DEBIAN
           mkdir -p build/max-value_1.0/usr/bin
@@ -69,8 +76,9 @@ jobs:
 
           dpkg-deb --build build/max-value_1.0
 
-      - name: Upload deb
+      - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
-          name: deb
+          name: deb-package
           path: build/max-value_1.0.deb
+          retention-days: 1
