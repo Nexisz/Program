@@ -50,8 +50,9 @@ jobs:
 
       - name: Run tests
         run: |
-          echo -e "5\n1 7 3 9 2" | ./usr/bin/max_value | grep 9
-
+          cd cicd
+          go run test.sh
+                  
   RunPackage:
     needs: RunTest
     runs-on: ubuntu-22.04
