@@ -1,12 +1,9 @@
 FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    dpkg
+RUN apt-get update && apt-get install -y build-essential
 
-COPY control.deb /tmp/app.deb
+COPY build/max-value_1.0 /tmp/pkg
 
-RUN dpkg -i /tmp/app.deb || apt-get -f install -y
+RUN dpkg -i /tmp/pkg || apt-get -f install -y
 
 CMD ["/usr/bin/max_value"]
-
