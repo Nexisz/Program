@@ -1,9 +1,7 @@
-name: CI Pipeline - C++ Project
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
 jobs:
@@ -15,14 +13,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install build tools
+      - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential make dpkg-dev
+          sudo apt-get install -y build-essential g++ make dpkg-dev
 
       - name: Build program
+        working-directory: ./src
         run: |
-          cd src
           make build
           mkdir -p ../usr/bin
           cp max_value ../usr/bin/
@@ -33,7 +31,6 @@ jobs:
         with:
           name: built-program
           path: usr/bin/max_value
-          retention-days: 1
 
 
   RunTest:
@@ -41,23 +38,23 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      - name: Download built program
+        uses: actions/download-artifact@v4
         with:
           name: built-program
           path: ./usr/bin
 
-      - run: chmod +x ./usr/bin/max_value
-
       - name: Run tests
         run: |
-          echo "=== RUN TESTS ==="
+          chmod +x ./usr/bin/max_value
 
+          echo "=== RUN TESTS ==="
           bash cicd/tests/test1.sh
           bash cicd/tests/test2.sh
           bash cicd/tests/test3.sh
-
           echo "=== ALL TESTS DONE ==="
 
 
@@ -83,14 +80,13 @@ jobs:
           cp DEBIAN/control build/max-value_1.0/DEBIAN/
           cp usr/bin/max_value build/max-value_1.0/usr/bin/
 
-          dpkg-deb --build build/max-value_1.0
-
+          dpkg-deb --build build/max-value_1.0 max_value.deb
 
       - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
           name: deb-package
-          path: build/max-value_1.0.deb
+          path: max_value.deb
           retention-days: 1
 
 
@@ -108,10 +104,10 @@ jobs:
           name: deb-package
           path: .
 
-      - name: Build Docker image (test)
+      - name: Build Docker image
         run: docker build -t myapp-test .
 
-      - name: Build Docker image (tagged)
+      - name: Build Docker image with tag
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }} .
 
       - name: Login to Docker Hub
@@ -127,11 +123,14 @@ jobs:
           docker tag ${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/myapp:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
 
-      - name: Save Docker image locally
+      - name: Save Docker image to dist folder (local artifact)
         run: |
           mkdir -p dist
           docker save myapp-test -o dist/myapp-container.tar
           gzip -f dist/myapp-container.tar
+
+          echo "Local artifact created:"
+          ls -la dist/
 
       - name: Upload container artifact
         uses: actions/upload-artifact@v4
