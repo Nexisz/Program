@@ -91,7 +91,7 @@ jobs:
 
 
   test-docker:
-    needs: RunMake
+    needs: RunPackage
     runs-on: ubuntu-22.04
 
     steps:
